@@ -13,7 +13,7 @@ load_dotenv()
 DATABASE_PATH = os.getenv("DATABASE_PATH")
 
 mcp = FastMCP("Expense_Tracker")
-engine = create_engine(f"sqlite:///{DATABASE_PATH}/mydatabase.db")
+engine = create_engine(f"sqlite:///{os.getcwd()}/mydatabase.db")
 
 
 class Base(DeclarativeBase):
