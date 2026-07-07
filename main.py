@@ -10,10 +10,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_PATH = os.getenv("DATABASE_PATH")
-
 mcp = FastMCP("Expense_Tracker")
-engine = create_engine(f"sqlite:///{os.getcwd()}/mydatabase.db")
+engine = create_engine("sqlite:///temp/mydatabase.db")
 
 
 class Base(DeclarativeBase):
@@ -40,7 +38,7 @@ def date_encoder(obj):
 
 
 @mcp.tool()
-async def add_expense(
+def add_expense(
     date: date_type,
     amount: int,
     category: Literal[
@@ -58,11 +56,13 @@ async def add_expense(
         with Session(engine) as session:
             expense = Expense(date=date, amount=amount, category=category, note=note)
             session.add(expense)
-            await session.commit()
+            session.commit()
         return {"status": "Data has been added to the database"}
     except Exception as error:
-        print(error)
-        return error
+        return {
+            "status": "error",
+            "message": str(error),
+        }
 
 
 @mcp.tool()
