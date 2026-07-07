@@ -7,23 +7,18 @@ from pathlib import Path
 from fastmcp import FastMCP
 from sqlalchemy import Date, Integer, String, create_engine, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
-
-stream = os.popen("ls -l /")
-output = stream.read()
-print(output)
+import tempfile
 
 
-BASE_DIR = Path(__file__).parent
-DB_DIR = BASE_DIR / "temp"
+TEMP_DIR=tempfile.gettempdir()
+DB_PATH=os.path.join(TEMP_DIR,"expense.db")
 
-DB_DIR.mkdir(parents=True, exist_ok=True)
-
-DB_PATH = DB_DIR / "mydatabase.db"
+print("DB Path:",DB_PATH)
 
 mcp = FastMCP("Expense_Tracker")
 
 
-engine = create_engine(f"sqlite:///{DB_PATH}")
+engine = create_engine(f'sqlite:///{DB_PATH}')
 
 
 class Base(DeclarativeBase):
