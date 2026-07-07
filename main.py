@@ -5,21 +5,16 @@ from unicodedata import category
 import json
 from pathlib import Path
 from fastmcp import FastMCP
-from sqlalchemy import Date, Integer, String, create_engine, select
+from sqlalchemy import Date, Integer, String, Text, create_engine, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
-import tempfile
+from dotenv import load_dotenv
 
-
-TEMP_DIR=tempfile.gettempdir()
-DB_PATH=os.path.join(TEMP_DIR,"expense.db")
-
-print("DB Path:",DB_PATH)
+load_dotenv()
 
 mcp = FastMCP("Expense_Tracker")
 
-
-engine = create_engine(f'sqlite:///{DB_PATH}')
-
+DB_URL=os.getenv('DB_URL')
+engine = create_engine(DB_URL)
 
 class Base(DeclarativeBase):
     pass
@@ -30,8 +25,8 @@ class Expense(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     date: Mapped[date_type] = mapped_column(Date, nullable=False)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
-    category: Mapped[str] = mapped_column(String, nullable=False)
-    note: Mapped[str] = mapped_column(String, nullable=True)
+    category: Mapped[str] = mapped_column(String(50), nullable=False)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 def init_db():
@@ -96,7 +91,7 @@ def list_expenses(
         with Session(engine) as session:
             result = session.execute(expense_list).mappings().all()
         converted_result = [dict(row) for row in result]
-        return json.dumps(converted_result, default=date_encoder, indent=4)
+        return converted_result
 
     except Exception as error:
         return {
