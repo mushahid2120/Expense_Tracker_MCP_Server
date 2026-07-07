@@ -3,15 +3,27 @@ import os
 from typing import Literal
 from unicodedata import category
 import json
+from pathlib import Path
 from fastmcp import FastMCP
 from sqlalchemy import Date, Integer, String, create_engine, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
-from dotenv import load_dotenv
 
-load_dotenv()
+stream = os.popen("ls -l /")
+output = stream.read()
+print(output)
+
+
+BASE_DIR = Path(__file__).parent
+DB_DIR = BASE_DIR / "temp"
+
+DB_DIR.mkdir(parents=True, exist_ok=True)
+
+DB_PATH = DB_DIR / "mydatabase.db"
 
 mcp = FastMCP("Expense_Tracker")
-engine = create_engine("sqlite:///temp/mydatabase.db")
+
+
+engine = create_engine(f"sqlite:///{DB_PATH}")
 
 
 class Base(DeclarativeBase):
@@ -27,7 +39,8 @@ class Expense(Base):
     note: Mapped[str] = mapped_column(String, nullable=True)
 
 
-Base.metadata.create_all(engine)
+def init_db():
+    Base.metadata.create_all(engine)
 
 
 def date_encoder(obj):
@@ -120,4 +133,5 @@ def categories() -> str:
 
 
 if __name__ == "__main__":
+    init_db()
     mcp.run(transport="http", host="0.0.0.0", port=8000)
